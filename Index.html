@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Skin Journal</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Skin Journal" />
+  <meta name="theme-color" content="#3d2c1e" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --cream:#faf6f0;--warm:#fff9f2;--bark:#3d2c1e;--moss:#4a5e3a;
+      --sage:#8a9e76;--sage-light:#c8d9b8;--blush-light:#f5ddd4;--blush:#e8b4a0;
+      --sand:#d4b896;--sand-light:#ede0cf;--ink:#2a1f14;--muted:#8a7968;--border:#e2d5c3;
+    }
+    body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
+    /* Header */
+    .header{background:var(--bark);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+    .header-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--cream)}
+    .header-sub{font-size:11px;color:var(--sand);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+    .tabs{display:flex;gap:4px}
+    .tab{padding:7px 16px;border-radius:20px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all .2s}
+    .tab.on{background:var(--sage);color:#fff}
+    .tab.off{background:transparent;color:var(--sand)}
+    /* Content */
+    .content{max-width:720px;margin:0 auto;padding:24px 20px 100px}
+    .panel{display:none}.panel.on{display:block}
+    /* Cards */
+    .card{background:var(--warm);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:14px}
+    .card-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--bark);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    /* Date strip */
+    .datestrip{background:var(--bark);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+    .datetext{font-family:'Playfair Display',serif;color:var(--cream);font-size:17px}
+    .datesub{font-size:11px;color:var(--sand);margin-top:2px}
+    .saved{background:var(--sage);color:#fff;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:none}
+    .saved.on{display:inline-block}
+    /* Form */
+    label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;letter-spacing:.03em}
+    input[type=text],textarea{width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:10px;background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color .2s}
+    input[type=text]:focus,textarea:focus{border-color:var(--sage)}
+    textarea{resize:vertical;min-height:76px}
+    .hint{font-size:11px;color:var(--muted);margin-top:5px}
+    /* Tags */
+    .tagbox{display:flex;flex-wrap:wrap;gap:5px;padding:7px 9px;border:1px solid var(--border);border-radius:10px;background:var(--cream);min-height:42px;cursor:text}
+    .tagbox:focus-within{border-color:var(--sage)}
+    .tag{display:flex;align-items:center;gap:3px;background:var(--sage-light);color:var(--moss);padding:3px 9px;border-radius:20px;font-size:12px}
+    .tagx{cursor:pointer;font-size:14px;line-height:1;color:var(--sage);background:none;border:none;padding:0}
+    .taginput{border:none!important;background:transparent!important;outline:none!important;font-size:14px!important;color:var(--ink)!important;min-width:100px;flex:1;font-family:'DM Sans',sans-serif;padding:2px 3px!important;width:auto!important}
+    /* Sliders */
+    .slrow{display:flex;align-items:center;gap:10px}
+    .sllabels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px}
+    input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;background:var(--border);cursor:pointer}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--bark);border-radius:50%;cursor:pointer}
+    .slval{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--bark);min-width:24px;text-align:center}
+    /* Symptom chips */
+    .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+    .chip{padding:7px 13px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;cursor:pointer;background:var(--cream);color:var(--muted);user-select:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+    .chip.on{background:var(--blush-light);border-color:var(--blush);color:var(--bark)}
+    /* Photo */
+    .photolabel{border:2px dashed var(--border);border-radius:12px;padding:22px;text-align:center;cursor:pointer;background:var(--cream);display:block;transition:border-color .2s}
+    .photolabel:hover{border-color:var(--sage)}
+    .photopreview{position:relative;display:inline-block;margin-top:10px}
+    .photopreview img{width:110px;height:110px;object-fit:cover;border-radius:10px;display:block}
+    .photorm{position:absolute;top:-6px;right:-6px;background:var(--bark);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer}
+    /* Buttons */
+    .savebtn{width:100%;padding:15px;background:var(--bark);color:var(--cream);border:none;border-radius:12px;cursor:pointer;font-family:'Playfair Display',serif;font-size:16px;margin-top:8px;transition:all .2s}
+    .savebtn:hover{background:var(--moss)}
+    .analyzebtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--moss),var(--sage));color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:'Playfair Display',serif;font-size:16px;margin-bottom:18px;transition:all .2s}
+    .analyzebtn:hover{opacity:.9}
+    .analyzebtn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+    .copybtn{width:100%;padding:12px;background:var(--warm);color:var(--bark);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;transition:all .2s}
+    .copybtn:hover:not(:disabled){background:var(--sand-light)}
+    .copybtn:disabled{color:var(--muted);cursor:not-allowed}
+    /* Two col */
+    .twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    /* Severity section */
+    .sevsec{display:none;margin-bottom:14px}.sevsec.on{display:block}
+    /* History */
+    .entry{background:var(--warm);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:11px}
+    .entryhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .entrydate{font-family:'Playfair Display',serif;font-size:15px;color:var(--bark)}
+    .badge{padding:3px 11px;border-radius:20px;font-size:11px;font-weight:500}
+    .s0,.s1{background:#e8f5e9;color:#2e7d32}
+    .s2{background:#f9fbe7;color:#558b2f}
+    .s3{background:#fff8e1;color:#f57f17}
+    .s4{background:#fbe9e7;color:#bf360c}
+    .s5{background:#fce4ec;color:#880e4f}
+    .entgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .entfield label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+    .entfield p{font-size:12px;color:var(--ink)}
+    .logtags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+    .logtag{background:var(--sand-light);color:var(--bark);padding:2px 7px;border-radius:8px;font-size:11px}
+    .logtag.sym{background:#fce4ec}
+    /* Analysis */
+    .result{background:var(--warm);border:1px solid var(--border);border-radius:16px;padding:22px}
+    .result h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--bark);margin-bottom:14px}
+    .resulttext{font-size:13px;line-height:1.8;color:var(--ink)}
+    /* Empty */
+    .empty{text-align:center;padding:48px 20px;color:var(--muted)}
+    .emptyicon{font-size:44px;margin-bottom:10px}
+    .emptytitle{font-family:'Playfair Display',serif;font-size:17px;color:var(--bark);margin-bottom:6px}
+    /* Loading */
+    .dots{display:inline-flex;gap:4px;align-items:center;margin-left:8px;vertical-align:middle}
+    .dots span{width:6px;height:6px;background:#fff;border-radius:50%;display:inline-block;animation:bounce 1.2s infinite}
+    .dots span:nth-child(2){animation-delay:.2s}
+    .dots span:nth-child(3){animation-delay:.4s}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+    /* Bottom nav */
+    .botnav{position:fixed;bottom:0;left:0;right:0;background:var(--bark);display:none;justify-content:space-around;align-items:center;padding:8px 0;padding-bottom:calc(8px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.1);z-index:100}
+    .botnav.on{display:flex}
+    .navbtn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:5px 20px;color:var(--sand);font-family:'DM Sans',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.05em;transition:color .2s;min-width:64px}
+    .navbtn .ni{font-size:20px;line-height:1}
+    .navbtn.on{color:var(--sage-light)}
+    /* iOS install banner */
+    .installbanner{background:var(--moss);color:#fff;padding:11px 18px;font-size:12px;display:none;align-items:center;justify-content:space-between;gap:10px}
+    .installbanner.on{display:flex}
+    .installbtn{background:#fff;color:var(--moss);border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .dismissbtn{background:none!important;color:rgba(255,255,255,.7)!important;font-size:17px!important;padding:0!important;border:none;cursor:pointer}
+    /* Responsive */
+    @media(max-width:600px){
+      .tabs{display:none}
+      .botnav{display:flex}
+      .content{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+    }
+    @media(max-width:520px){
+      .twocol{grid-template-columns:1fr}
+      .entgrid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Install banner -->
+  <div class="installbanner" id="installbanner">
+    <span>📲 Add to home screen for the best experience</span>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="installbtn" onclick="showInstallHelp()">How?</button>
+      <button class="dismissbtn" onclick="dismissInstall()">✕</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">Skin Journal</div>
+      <div class="header-sub">Daily Trigger Tracker · <span id="hcount">0 entries</span></div>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="htab-log" onclick="go('log')">📝 Log</button>
+      <button class="tab off" id="htab-history" onclick="go('history')">📖 History</button>
+      <button class="tab off" id="htab-analysis" onclick="go('analysis')">🔬 Analysis</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- LOG PANEL -->
+    <div class="panel on" id="panel-log">
+      <div class="datestrip">
+        <div>
+          <div class="datetext" id="todaydate"></div>
+          <div class="datesub">How are you doing today?</div>
+        </div>
+        <span class="saved" id="savedbadge">✓ Saved!</span>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🥗 Food &amp; Drinks</div>
+        <label>What did you eat and drink today?</label>
+        <div class="tagbox" id="tb-foods" onclick="fi('ti-foods')">
+          <input class="taginput" id="ti-foods" placeholder="Type and press Enter — e.g. oat milk, sushi…" />
+        </div>
+        <p class="hint">Add each item separately so patterns can be detected</p>
+      </div>
+
+      <div class="twocol">
+        <div class="card">
+          <div class="card-title">🧠 Stress Level</div>
+          <div class="slrow">
+            <input type="range" min="1" max="5" value="3" id="sl-stress" oninput="sv('sv-stress',this.value)" />
+            <div class="slval" id="sv-stress">3</div>
+          </div>
+          <div class="sllabels"><span>Calm</span><span>Stressed</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🌙 Sleep Quality</div>
+          <div class="slrow">
+            <input type="range" min="1" max="5" value="3" id="sl-sleep" oninput="sv('sv-sleep',this.value)" />
+            <div class="slval" id="sv-sleep">3</div>
+          </div>
+          <div class="sllabels"><span>Poor</span><span>Great</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✨ Skincare Products</div>
+        <label>Products applied today</label>
+        <div class="tagbox" id="tb-skincare" onclick="fi('ti-skincare')">
+          <input class="taginput" id="ti-skincare" placeholder="e.g. CeraVe, SPF 50, new toner…" />
+        </div>
+      </div>
+
+      <div class="twocol">
+        <div class="card">
+          <div class="card-title">🌿 Exposures</div>
+          <label>Environmental contacts</label>
+          <div class="tagbox" id="tb-exposures" onclick="fi('ti-exposures')">
+            <input class="taginput" id="ti-exposures" placeholder="e.g. cat, pollen, detergent…" />
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🏃 Exercise</div>
+          <label>Activity today</label>
+          <input type="text" id="exercise" placeholder="e.g. 30min run, yoga, rest day" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💊 Medications &amp; Supplements</div>
+        <label>Anything taken today</label>
+        <div class="tagbox" id="tb-meds" onclick="fi('ti-meds')">
+          <input class="taginput" id="ti-meds" placeholder="e.g. vitamin D, antihistamine, fish oil…" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🪞 Skin Today</div>
+        <label style="margin-bottom:10px">Any symptoms? (select all that apply)</label>
+        <div class="chips" id="chipgrid"></div>
+        <div class="sevsec" id="sevsec">
+          <label>Severity today</label>
+          <div class="slrow">
+            <input type="range" min="1" max="5" value="1" id="sl-sev" oninput="sv('sv-sev',this.value)" />
+            <div class="slval" id="sv-sev">1</div>
+          </div>
+          <div class="sllabels"><span>Mild</span><span>Severe</span></div>
+          <div style="margin-bottom:14px"></div>
+        </div>
+        <label>Photo (optional)</label>
+        <label class="photolabel" id="photolabel">
+          <input type="file" accept="image/*" style="display:none" onchange="loadPhoto(this)" />
+          <div style="font-size:30px;margin-bottom:7px">📷</div>
+          <div style="font-size:12px;color:var(--muted)">Tap to add a photo of your skin today</div>
+        </label>
+        <div class="photopreview" id="photopreview" style="display:none">
+          <img id="photoimg" src="" alt="skin" />
+          <button class="photorm" onclick="rmPhoto()">×</button>
+        </div>
+        <div style="margin-top:14px">
+          <label>Notes</label>
+          <textarea id="notes" placeholder="Anything else worth noting — new environment, period, mood, travel, new product…"></textarea>
+        </div>
+      </div>
+
+      <button class="savebtn" onclick="saveEntry()">Save Today's Entry →</button>
+    </div>
+
+    <!-- HISTORY PANEL -->
+    <div class="panel" id="panel-history">
+      <div id="histcontent"></div>
+    </div>
+
+    <!-- ANALYSIS PANEL -->
+    <div class="panel" id="panel-analysis">
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title">🔬 AI Pattern Analysis</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7">Once you have a few days of entries, Claude will analyze your logs and surface potential trigger patterns — including lag effects that might not be obvious day-to-day.</p>
+        <p id="entcount" style="font-size:12px;color:var(--muted);margin-top:9px;font-weight:500">No entries yet — log a few days first.</p>
+      </div>
+
+      <!-- Manual workaround while AI is being set up -->
+      <div class="card" style="margin-bottom:18px;border:1.5px dashed var(--border)">
+        <div class="card-title" style="margin-bottom:8px">📋 Manual Analysis (Workaround)</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">While the AI button is being set up, copy your logs and paste them into <strong><a href="https://claude.ai" target="_blank" style="color:var(--moss)">claude.ai</a></strong> and ask: <em>"Analyze these skin logs and find trigger patterns."</em></p>
+        <button class="copybtn" id="copybtn" onclick="copyLogs()" disabled>📋 Copy All Logs to Clipboard</button>
+        <p id="copymsg" style="font-size:11px;color:var(--sage);margin-top:7px;display:none">✓ Copied! Now paste into claude.ai</p>
+      </div>
+
+      <button class="analyzebtn" id="analyzebtn" onclick="analyze()" disabled>Analyze My Patterns →</button>
+      <div id="analysisout"></div>
+      <div style="margin-top:28px;text-align:center">
+        <button onclick="clearData()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px">🗑 Clear all data</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="botnav" id="botnav">
+    <button class="navbtn on" id="nb-log" onclick="go('log')"><span class="ni">📝</span>Log</button>
+    <button class="navbtn" id="nb-history" onclick="go('history')"><span class="ni">📖</span>History</button>
+    <button class="navbtn" id="nb-analysis" onclick="go('analysis')"><span class="ni">🔬</span>Analysis</button>
+  </nav>
+
+</div>
+
+<script>
+// ── State ──
+var SYMPTOMS = ["Redness","Itching","Swelling","Hives","Dry patches","Burning","Peeling","Rash"];
+var tags = {foods:[],skincare:[],exposures:[],meds:[]};
+var selSymptoms = [];
+var photoData = null;
+var KEY = 'skinjournal-v1';
+var entries = [];
+
+try { entries = JSON.parse(localStorage.getItem(KEY)||'[]'); } catch(e){ entries=[]; }
+
+// ── Init ──
+document.getElementById('todaydate').textContent = fmtDate(new Date());
+buildChips();
+setupTags();
+updateCounts();
+showInstallPrompt();
+
+// ── Routing ──
+function go(name) {
+  ['log','history','analysis'].forEach(function(n){
+    document.getElementById('panel-'+n).classList.toggle('on', n===name);
+    var ht = document.getElementById('htab-'+n);
+    if(ht){ ht.className = 'tab '+(n===name?'on':'off'); }
+    var nb = document.getElementById('nb-'+n);
+    if(nb){ nb.className = 'navbtn '+(n===name?'on':''); }
+  });
+  if(name==='history') renderHistory();
+  if(name==='analysis') updateCounts();
+}
+
+// ── Tags ──
+function setupTags(){
+  var configs = [
+    {tb:'tb-foods',ti:'ti-foods',key:'foods'},
+    {tb:'tb-skincare',ti:'ti-skincare',key:'skincare'},
+    {tb:'tb-exposures',ti:'ti-exposures',key:'exposures'},
+    {tb:'tb-meds',ti:'ti-meds',key:'meds'}
+  ];
+  configs.forEach(function(c){
+    var inp = document.getElementById(c.ti);
+    inp.addEventListener('keydown', function(e){
+      if((e.key==='Enter'||e.key===',') && inp.value.trim()){
+        e.preventDefault();
+        var v = inp.value.trim();
+        if(!tags[c.key].includes(v)){ tags[c.key].push(v); renderTags(c.key,c.tb,c.ti); }
+        inp.value='';
+      }
+    });
+  });
+}
+function fi(id){ document.getElementById(id).focus(); }
+function sv(id,val){ document.getElementById(id).textContent=val; }
+function renderTags(key,tbId,tiId){
+  var tb = document.getElementById(tbId);
+  var ti = document.getElementById(tiId);
+  tb.querySelectorAll('.tag').forEach(function(t){t.remove();});
+  tags[key].forEach(function(v){
+    var t = document.createElement('span');
+    t.className='tag';
+    t.innerHTML=v+'<button class="tagx" onclick="rmTag(\''+key+'\',\''+v+'\',\''+tbId+'\',\''+tiId+'\')">×</button>';
+    tb.insertBefore(t,ti);
+  });
+  ti.placeholder = tags[key].length?'':ti.dataset.ph||'';
+}
+function rmTag(key,val,tbId,tiId){
+  tags[key]=tags[key].filter(function(x){return x!==val;});
+  renderTags(key,tbId,tiId);
+}
+
+// ── Symptoms ──
+function buildChips(){
+  var grid = document.getElementById('chipgrid');
+  SYMPTOMS.forEach(function(s){
+    var c = document.createElement('div');
+    c.className='chip'; c.textContent=s; c.dataset.s=s;
+    c.onclick=function(){ toggleChip(s,c); };
+    grid.appendChild(c);
+  });
+}
+function toggleChip(s,el){
+  if(selSymptoms.includes(s)){
+    selSymptoms=selSymptoms.filter(function(x){return x!==s;});
+    el.classList.remove('on');
+  } else {
+    selSymptoms.push(s);
+    el.classList.add('on');
+  }
+  document.getElementById('sevsec').classList.toggle('on',selSymptoms.length>0);
+}
+
+// ── Photo ──
+function loadPhoto(inp){
+  var file=inp.files[0]; if(!file) return;
+  var r=new FileReader();
+  r.onload=function(e){
+    photoData=e.target.result;
+    document.getElementById('photoimg').src=photoData;
+    document.getElementById('photolabel').style.display='none';
+    document.getElementById('photopreview').style.display='inline-block';
+  };
+  r.readAsDataURL(file);
+}
+function rmPhoto(){
+  photoData=null;
+  document.getElementById('photolabel').style.display='block';
+  document.getElementById('photopreview').style.display='none';
+}
+
+// ── Save ──
+function saveEntry(){
+  var entry={
+    id:Date.now(), date:new Date().toISOString(),
+    foods:tags.foods.slice(), stress:+document.getElementById('sl-stress').value,
+    sleep:+document.getElementById('sl-sleep').value,
+    skincare:tags.skincare.slice(), exposures:tags.exposures.slice(),
+    exercise:document.getElementById('exercise').value,
+    meds:tags.meds.slice(), symptoms:selSymptoms.slice(),
+    severity:selSymptoms.length>0?+document.getElementById('sl-sev').value:0,
+    notes:document.getElementById('notes').value, photo:photoData
+  };
+  entries.unshift(entry);
+  try{ localStorage.setItem(KEY,JSON.stringify(entries)); }catch(e){}
+  resetForm();
+  var b=document.getElementById('savedbadge'); b.classList.add('on');
+  setTimeout(function(){b.classList.remove('on');},2500);
+  updateCounts();
+}
+function resetForm(){
+  ['foods','skincare','exposures','meds'].forEach(function(k){
+    tags[k]=[];
+    var map={foods:['tb-foods','ti-foods'],skincare:['tb-skincare','ti-skincare'],exposures:['tb-exposures','ti-exposures'],meds:['tb-meds','ti-meds']};
+    renderTags(k,map[k][0],map[k][1]);
+  });
+  document.getElementById('sl-stress').value=3; sv('sv-stress',3);
+  document.getElementById('sl-sleep').value=3; sv('sv-sleep',3);
+  document.getElementById('sl-sev').value=1; sv('sv-sev',1);
+  document.getElementById('exercise').value='';
+  document.getElementById('notes').value='';
+  selSymptoms=[];
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+  document.getElementById('sevsec').classList.remove('on');
+  rmPhoto();
+}
+
+// ── History ──
+function renderHistory(){
+  var c=document.getElementById('histcontent');
+  if(!entries.length){
+    c.innerHTML='<div class="empty"><div class="emptyicon">📖</div><div class="emptytitle">No entries yet</div><p>Log your first day to start building your history</p></div>';
+    return;
+  }
+  c.innerHTML=entries.map(function(e){
+    var hasSym=e.symptoms&&e.symptoms.length>0;
+    return '<div class="entry">'+
+      '<div class="entryhead">'+
+        '<div class="entrydate">'+fmtDate(e.date)+'</div>'+
+        '<span class="badge s'+(hasSym?e.severity:0)+'">'+(hasSym?'Severity '+e.severity+'/5':'Clear skin ✓')+'</span>'+
+      '</div>'+
+      '<div class="entgrid">'+
+        '<div class="entfield"><label>Food &amp; drinks</label>'+tagsHtml(e.foods)+'</div>'+
+        '<div class="entfield"><label>Stress / Sleep</label><p>Stress '+e.stress+'/5 · Sleep '+e.sleep+'/5</p></div>'+
+        '<div class="entfield"><label>Skincare</label>'+tagsHtml(e.skincare)+'</div>'+
+        '<div class="entfield"><label>Exposures</label>'+tagsHtml(e.exposures)+'</div>'+
+        (hasSym?'<div class="entfield" style="grid-column:1/-1"><label>Symptoms</label><div class="logtags">'+e.symptoms.map(function(t){return '<span class="logtag sym">'+t+'</span>';}).join('')+'</div></div>':'')+
+        (e.notes?'<div class="entfield" style="grid-column:1/-1"><label>Notes</label><p>'+e.notes+'</p></div>':'')+
+      '</div>'+
+      (e.photo?'<img src="'+e.photo+'" style="width:76px;height:76px;object-fit:cover;border-radius:8px;margin-top:10px" />':'')+
+    '</div>';
+  }).join('');
+}
+function tagsHtml(arr){
+  if(!arr||!arr.length) return '<p>—</p>';
+  return '<div class="logtags">'+arr.map(function(t){return '<span class="logtag">'+t+'</span>';}).join('')+'</div>';
+}
+
+// ── Counts ──
+function updateCounts(){
+  var n=entries.length;
+  document.getElementById('hcount').textContent=n?n+' entr'+(n===1?'y':'ies')+' saved':'0 entries';
+  document.getElementById('entcount').textContent=n?n+' entr'+(n===1?'y':'ies')+' ready for analysis.':'No entries yet — log a few days first.';
+  document.getElementById('analyzebtn').disabled=!n;
+  document.getElementById('copybtn').disabled=!n;
+}
+
+// ── Copy logs ──
+function copyLogs(){
+  var summary = 'SKIN JOURNAL LOGS\n'+'='.repeat(40)+'\n\n'+
+    entries.map(function(e){
+      return 'Date: '+fmtDate(e.date)+
+        '\nFoods: '+(e.foods.join(', ')||'none')+
+        '\nStress: '+e.stress+'/5 | Sleep: '+e.sleep+'/5'+
+        '\nSkincare: '+(e.skincare.join(', ')||'none')+
+        '\nExposures: '+(e.exposures.join(', ')||'none')+
+        '\nExercise: '+(e.exercise||'none')+
+        '\nMedications: '+(e.meds.join(', ')||'none')+
+        '\nSkin symptoms: '+(e.symptoms.length?e.symptoms.join(', ')+' (severity '+e.severity+'/5)':'none')+
+        '\nNotes: '+(e.notes||'—');
+    }).join('\n\n---\n\n')+
+    '\n\n='.repeat(40)+
+    '\n\nPlease analyze these skin health logs and:\n'+
+    '1. Identify key patterns\n'+
+    '2. Highlight the most likely triggers (consider 24-72hr lag effects)\n'+
+    '3. Suggest one specific thing to try or eliminate';
+
+  navigator.clipboard.writeText(summary).then(function(){
+    var msg = document.getElementById('copymsg');
+    msg.style.display='block';
+    setTimeout(function(){ msg.style.display='none'; }, 3000);
+  }).catch(function(){
+    alert('Could not copy automatically. Please take a screenshot of your history tab instead.');
+  });
+}
+
+// ── Clear ──
+function clearData(){
+  if(confirm('Delete all entries? This cannot be undone.')){
+    entries=[];
+    localStorage.removeItem(KEY);
+    updateCounts();
+    renderHistory();
+    document.getElementById('analysisout').innerHTML='';
+  }
+}
+
+// ── Analysis ──
+async function analyze(){
+  var btn=document.getElementById('analyzebtn');
+  var out=document.getElementById('analysisout');
+  btn.disabled=true;
+  btn.innerHTML='Analyzing <span class="dots"><span></span><span></span><span></span></span>';
+  out.innerHTML='';
+  var summary=entries.map(function(e){
+    return 'Date: '+fmtDate(e.date)+
+      '\nFoods: '+(e.foods.join(', ')||'none')+
+      '\nStress: '+e.stress+'/5 | Sleep: '+e.sleep+'/5'+
+      '\nSkincare: '+(e.skincare.join(', ')||'none')+
+      '\nExposures: '+(e.exposures.join(', ')||'none')+
+      '\nExercise: '+(e.exercise||'none')+
+      '\nMedications: '+(e.meds.join(', ')||'none')+
+      '\nSkin: '+(e.symptoms.length?e.symptoms.join(', ')+' (severity '+e.severity+'/5)':'none')+
+      '\nNotes: '+(e.notes||'—');
+  }).join('\n---\n');
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'You are a compassionate health pattern analyst helping someone understand their skin allergy triggers. Analyze the daily logs to find correlations between lifestyle variables and skin reactions. Consider lag effects — reactions often appear 24-72 hours after exposure. Look for compound triggers. Structure your response in exactly three sections: **Key Patterns** **Most Likely Triggers** **One Thing To Try**. Be warm, specific, plain English only, honest about uncertainty.',
+        messages:[{role:'user',content:'Please analyze these skin health logs:\n\n'+summary}]
+      })
+    });
+    var data=await res.json();
+    var text=(data.content&&data.content[0]&&data.content[0].text)||'Unable to generate analysis.';
+    out.innerHTML='<div class="result"><h3>✦ Your Pattern Report</h3><div class="resulttext">'+text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')+'</div></div>';
+  }catch(e){
+    out.innerHTML='<div class="result"><p style="color:var(--muted)">Something went wrong. Please try again.</p></div>';
+  }
+  btn.disabled=false;
+  btn.innerHTML='Analyze My Patterns →';
+}
+
+// ── Helpers ──
+function fmtDate(d){
+  return new Date(d).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+
+// ── iOS install prompt ──
+function showInstallPrompt(){
+  var isIos=/iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+  var isStandalone=window.navigator.standalone===true;
+  var dismissed=localStorage.getItem('skinjournal-install-dismissed');
+  if(isIos&&!isStandalone&&!dismissed){
+    setTimeout(function(){document.getElementById('installbanner').classList.add('on');},1500);
+  }
+}
+function showInstallHelp(){
+  alert('In Safari: tap the Share button (box with arrow) → scroll down → tap "Add to Home Screen"');
+  dismissInstall();
+}
+function dismissInstall(){
+  document.getElementById('installbanner').classList.remove('on');
+  localStorage.setItem('skinjournal-install-dismissed','1');
+}
+</script>
+</body>
+</html>
