@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase'
+
+//import { createAdminClient } from '@/lib/supabase'
+import { createUserClient } from '@/lib/supabase-server'
 
 export async function GET() {
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from('entries')
-    .select('*')
-    .order('date', { ascending: false })
+const supabase = await createUserClient()
+const { data, error } = await supabase
+  .from('entries')
+  .select('*')
+  .order('date', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
@@ -14,10 +16,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const supabase = createAdminClient()
+  const supabase = await createUserClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { data, error } = await supabase
     .from('entries')
-    .insert(body)
+    .insert({ ...body, user_id: user.id })
     .select()
     .single()
 
@@ -26,7 +35,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const supabase = createAdminClient()
+  const supabase = await createUserClient()
   const { error } = await supabase
     .from('entries')
     .delete()
