@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,13 +16,18 @@ export default function LoginPage() {
 
   async function handleLogin() {
     setLoading(true)
-    await supabase.auth.signInWithOtp({
+    setError('')
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
-    setSubmitted(true)
+    if (error) {
+      setError(error.message)
+    } else {
+      setSubmitted(true)
+    }
     setLoading(false)
   }
 
@@ -59,6 +65,7 @@ export default function LoginPage() {
         >
           {loading ? 'Sending...' : 'Send magic link →'}
         </button>
+        {error && <p style={{ fontSize: '13px', color: 'red', margin: 0 }}>{error}</p>}
       </div>
     </div>
   )

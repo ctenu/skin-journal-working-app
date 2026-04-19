@@ -16,18 +16,11 @@ create table if not exists entries (
   user_id     uuid references auth.users(id) on delete cascade
 );
 
--- Enable RLS (open policy until auth is configured)
+-- Enable RLS — users can only access their own entries
 alter table entries enable row level security;
 
-create policy "allow all for now"
+create policy "users can manage own entries"
   on entries
   for all
-  using (true)
-  with check (true);
-
--- When auth is added, replace the policy above with:
--- create policy "users can manage own entries"
---   on entries
---   for all
---   using (auth.uid() = user_id)
---   with check (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
