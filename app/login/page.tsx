@@ -1,7 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+)
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -9,10 +14,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  )
+  // Clear any existing session so a new user always gets a fresh login
+  useEffect(() => {
+    supabase.auth.signOut()
+  }, [])
 
   async function handleLogin() {
     setLoading(true)
