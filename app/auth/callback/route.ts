@@ -30,6 +30,6 @@ export async function GET(request: NextRequest) {
     if (!error) return response
   }
 
-  // Something went wrong — redirect to login with an error indicator
-  return NextResponse.redirect(new URL('/login?error=auth', request.url))
+  // Something went wrong — redirect to login with a clean URL (no raw Supabase error params)
+  return NextResponse.redirect(new URL('/login?error=auth', request.nextUrl.origin))
 }

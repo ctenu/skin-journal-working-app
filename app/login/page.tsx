@@ -5,7 +5,8 @@ import { createBrowserClient } from '@supabase/ssr'
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  { auth: { flowType: 'pkce' } }
 )
 
 export default function LoginPage() {
@@ -14,8 +15,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Clear any existing session so a new user always gets a fresh login
   useEffect(() => {
+    // Show user-friendly message for expired/invalid magic links
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('error') === 'auth') {
+      setError('Your sign-in link has expired or already been used. Please request a new one.')
+    }
+    // Clear any existing session so a new user always gets a fresh login
     supabase.auth.signOut()
   }, [])
 
@@ -25,6 +31,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        shouldCreateUser: true,
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
