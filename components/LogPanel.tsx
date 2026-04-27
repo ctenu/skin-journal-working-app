@@ -25,6 +25,7 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
   const [photo, setPhoto] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [savedVisible, setSavedVisible] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   function toggleSymptom(s: string) {
     setSymptoms((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]))
@@ -54,12 +55,18 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
       notes,
       photo,
     }
-    await fetch('/api/entries', {
+    const res = await fetch('/api/entries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entry),
     })
     setSaving(false)
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      setSaveError(body.error || `Failed to save (${res.status})`)
+      return
+    }
+    setSaveError('')
     resetForm()
     setSavedVisible(true)
     setTimeout(() => setSavedVisible(false), 2500)
@@ -196,6 +203,7 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
       <button className="savebtn" onClick={handleSave} disabled={saving}>
         {saving ? 'Saving…' : 'Save Today\'s Entry →'}
       </button>
+      {saveError && <p style={{ fontSize: '13px', color: 'red', marginTop: '8px' }}>{saveError}</p>}
     </div>
   )
 }
