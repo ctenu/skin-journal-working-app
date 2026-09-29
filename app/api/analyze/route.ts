@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { Entry } from '@/lib/types'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 }
@@ -23,6 +21,8 @@ export async function POST(request: Request) {
     .join('\n---\n')
 
   try {
+    // Created per request so builds don't require OPENAI_API_KEY (e.g. Vercel preview)
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       max_tokens: 1000,
