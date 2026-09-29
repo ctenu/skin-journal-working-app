@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
+// Must match the OTP length in Supabase (Authentication → Providers → Email) for both dev and prod
+const OTP_LENGTH = 6
+
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
@@ -58,21 +61,22 @@ export default function LoginPage() {
         <div style={cardStyle}>
           <h1 style={titleStyle}>Check your email</h1>
           <p style={subtitleStyle}>
-            Enter the 6-digit code sent to <strong>{email}</strong>.
+            Enter the {OTP_LENGTH}-digit code sent to <strong>{email}</strong>.
           </p>
           <input
             type="text"
             inputMode="numeric"
             placeholder="123456"
+            autoComplete="one-time-code"
             value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            onKeyDown={(e) => e.key === 'Enter' && otp.length === 6 && handleVerifyOtp()}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, OTP_LENGTH))}
+            onKeyDown={(e) => e.key === 'Enter' && otp.length === OTP_LENGTH && handleVerifyOtp()}
             style={inputStyle}
             autoFocus
           />
           <button
             onClick={handleVerifyOtp}
-            disabled={otp.length !== 6 || loading}
+            disabled={otp.length !== OTP_LENGTH || loading}
             style={buttonStyle}
           >
             {loading ? 'Verifying...' : 'Verify code →'}
