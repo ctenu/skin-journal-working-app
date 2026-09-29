@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { NotebookPen, BookOpen, Microscope } from 'lucide-react'
 import LogPanel from './LogPanel'
 import HistoryPanel from './HistoryPanel'
 import AnalysisPanel from './AnalysisPanel'
@@ -72,13 +73,13 @@ export default function JournalApp() {
         </div>
         <div className="tabs">
           <button className={`tab ${tab === 'log' ? 'on' : 'off'}`} onClick={() => setTab('log')}>
-            📝 Log
+            <NotebookPen size={13} strokeWidth={1.5} /> Log
           </button>
           <button className={`tab ${tab === 'history' ? 'on' : 'off'}`} onClick={() => setTab('history')}>
-            📖 History
+            <BookOpen size={13} strokeWidth={1.5} /> History
           </button>
           <button className={`tab ${tab === 'analysis' ? 'on' : 'off'}`} onClick={() => setTab('analysis')}>
-            🔬 Analysis
+            <Microscope size={13} strokeWidth={1.5} /> Analysis
           </button>
         </div>
       </div>
@@ -91,13 +92,13 @@ export default function JournalApp() {
 
       <nav className="botnav">
         <button className={`navbtn ${tab === 'log' ? 'on' : ''}`} onClick={() => setTab('log')}>
-          <span className="ni">📝</span>Log
+          <span className="ni"><NotebookPen size={20} strokeWidth={1.5} /></span>Log
         </button>
         <button className={`navbtn ${tab === 'history' ? 'on' : ''}`} onClick={() => setTab('history')}>
-          <span className="ni">📖</span>History
+          <span className="ni"><BookOpen size={20} strokeWidth={1.5} /></span>History
         </button>
         <button className={`navbtn ${tab === 'analysis' ? 'on' : ''}`} onClick={() => setTab('analysis')}>
-          <span className="ni">🔬</span>Analysis
+          <span className="ni"><Microscope size={20} strokeWidth={1.5} /></span>Analysis
         </button>
       </nav>
     </div>

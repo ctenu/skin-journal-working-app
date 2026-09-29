@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Salad, Brain, Moon, Sparkles, Leaf, Dumbbell, Pill, ScanFace } from 'lucide-react'
 import TagInput from './TagInput'
 import SliderField from './SliderField'
 
@@ -100,7 +101,7 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
       </div>
 
       <div className="card">
-        <div className="card-title">🥗 Food &amp; Drinks</div>
+        <div className="card-title"><span className="card-icon"><Salad size={16} strokeWidth={1.5} /></span>Food &amp; Drinks</div>
         <label>What did you eat and drink today?</label>
         <TagInput tags={foods} onChange={setFoods} placeholder="Type and press Enter — e.g. oat milk, sushi…" />
         <p className="hint">Add each item separately so patterns can be detected</p>
@@ -108,47 +109,47 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
 
       <div className="twocol">
         <div className="card">
-          <div className="card-title">🧠 Stress Level</div>
+          <div className="card-title"><span className="card-icon"><Brain size={16} strokeWidth={1.5} /></span>Stress Level</div>
           <SliderField id="stress" value={stress} onChange={setStress} lowLabel="Calm" highLabel="Stressed" />
         </div>
         <div className="card">
-          <div className="card-title">🌙 Sleep Quality</div>
+          <div className="card-title"><span className="card-icon"><Moon size={16} strokeWidth={1.5} /></span>Sleep Quality</div>
           <SliderField id="sleep" value={sleep} onChange={setSleep} lowLabel="Poor" highLabel="Great" />
         </div>
       </div>
 
       <div className="card">
-        <div className="card-title">✨ Skincare Products</div>
+        <div className="card-title"><span className="card-icon"><Sparkles size={16} strokeWidth={1.5} /></span>Skincare Products</div>
         <label>Products applied today</label>
         <TagInput tags={skincare} onChange={setSkincare} placeholder="e.g. CeraVe, SPF 50, new toner…" />
       </div>
 
       <div className="twocol">
         <div className="card">
-          <div className="card-title">🌿 Exposures</div>
+          <div className="card-title"><span className="card-icon"><Leaf size={16} strokeWidth={1.5} /></span>Exposures</div>
           <label>Environmental contacts</label>
           <TagInput tags={exposures} onChange={setExposures} placeholder="e.g. cat, pollen, detergent…" />
         </div>
         <div className="card">
-          <div className="card-title">🏃 Exercise</div>
+          <div className="card-title"><span className="card-icon"><Dumbbell size={16} strokeWidth={1.5} /></span>Exercise</div>
           <label>Activity today</label>
           <input
             type="text"
             value={exercise}
             onChange={(e) => setExercise(e.target.value)}
-            placeholder="e.g. 30min run, yoga, rest day"
+            placeholder="e.g. shoulder day with cardio, rest day"
           />
         </div>
       </div>
 
       <div className="card">
-        <div className="card-title">💊 Medications &amp; Supplements</div>
+        <div className="card-title"><span className="card-icon"><Pill size={16} strokeWidth={1.5} /></span>Medications &amp; Supplements</div>
         <label>Anything taken today</label>
         <TagInput tags={meds} onChange={setMeds} placeholder="e.g. vitamin D, antihistamine, fish oil…" />
       </div>
 
       <div className="card">
-        <div className="card-title">🪞 Skin Today</div>
+        <div className="card-title"><span className="card-icon"><ScanFace size={16} strokeWidth={1.5} /></span>Skin Today</div>
         <label style={{ marginBottom: '10px' }}>Any symptoms? (select all that apply)</label>
         <div className="chips">
           {SYMPTOMS.map((s) => (
