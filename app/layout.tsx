@@ -1,16 +1,22 @@
 import type { Metadata, Viewport } from 'next'
-import { Playfair_Display, DM_Sans } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['400', '600'],
+// Self-hosted via @fontsource: next/font/google fails on Vercel builds when
+// Google Fonts returns font URLs without a file extension
+const playfair = localFont({
+  src: [
+    { path: '../node_modules/@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2', weight: '400' },
+    { path: '../node_modules/@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff2', weight: '600' },
+  ],
   variable: '--font-playfair',
 })
 
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500'],
+const dmSans = localFont({
+  src: [
+    { path: '../node_modules/@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff2', weight: '400' },
+    { path: '../node_modules/@fontsource/dm-sans/files/dm-sans-latin-500-normal.woff2', weight: '500' },
+  ],
   variable: '--font-dm-sans',
 })
 
