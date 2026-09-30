@@ -57,6 +57,14 @@ export default function HistoryPanel({ entries }: { entries: Entry[] }) {
                 <label>Exposures</label>
                 <TagList arr={e.exposures} />
               </div>
+              <div className="entfield">
+                <label>Exercise</label>
+                <p>{e.exercise || '—'}</p>
+              </div>
+              <div className="entfield">
+                <label>Medications</label>
+                <TagList arr={e.meds} />
+              </div>
               {hasSym && (
                 <div className="entfield" style={{ gridColumn: '1 / -1' }}>
                   <label>Symptoms</label>
