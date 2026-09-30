@@ -103,8 +103,8 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
       <div className="card">
         <div className="card-title"><span className="card-icon"><Salad size={16} strokeWidth={1.5} /></span>Food &amp; Drinks</div>
         <label>What did you eat and drink today?</label>
-        <TagInput tags={foods} onChange={setFoods} placeholder="Type and press Enter — e.g. oat milk, sushi…" />
-        <p className="hint">Add each item separately so patterns can be detected</p>
+        <TagInput tags={foods} onChange={setFoods} placeholder="e.g. oat milk, sushi — or describe your meals" />
+        <p className="hint">Press Enter to add items separately, or just write it out</p>
       </div>
 
       <div className="twocol">

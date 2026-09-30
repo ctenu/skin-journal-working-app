@@ -19,7 +19,8 @@ export default function TagInput({ tags, onChange, placeholder }: TagInputProps)
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' || e.key === ',') {
+    // Only Enter splits items; commas are kept so free-form sentences stay intact
+    if (e.key === 'Enter') {
       e.preventDefault()
       addTag()
     }
@@ -45,6 +46,8 @@ export default function TagInput({ tags, onChange, placeholder }: TagInputProps)
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
+        // Commit pending text on blur so it isn't lost when the user taps Save without pressing Enter
+        onBlur={addTag}
         placeholder={tags.length === 0 ? placeholder : ''}
       />
     </div>
