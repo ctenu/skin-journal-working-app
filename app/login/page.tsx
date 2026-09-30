@@ -29,10 +29,15 @@ export default function LoginPage() {
     setError('')
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: true },
+      // Invite-only: new accounts are added in the Supabase dashboard
+      options: { shouldCreateUser: false },
     })
     if (error) {
-      setError(error.message)
+      setError(
+        error.code === 'otp_disabled'
+          ? "There's no account for this email. Ask the app owner for an invite."
+          : error.message
+      )
     } else {
       setStep('otp')
     }
