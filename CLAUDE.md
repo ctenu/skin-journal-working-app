@@ -11,11 +11,11 @@ The app has three tabs: **Log**, **History**, and **Analysis**.
 The app is in active beta with a real user. Core features are working:
 - Multi-user support via Supabase auth
 - Daily logging (diet, stress, sleep, skincare, exposures, symptoms, etc.)
-- AI pattern analysis via `/api/analyze` (Anthropic API, not OpenAI)
+- AI pattern analysis via `/api/analyze` (OpenAI `gpt-4o`, key in `OPENAI_API_KEY`)
 - Separate Supabase projects for dev and prod
 
 ### Recent Completed Work
-- **Auth**: Replaced magic link auth with 6-digit email OTP (`OTP_LENGTH` in `app/login/page.tsx` must match the Supabase setting in both dev and prod). Removed `/app/auth/callback`. Login lives in `app/login/page.tsx`.
+- **Auth**: Replaced magic link auth with 6-digit email OTP (`OTP_LENGTH` in `app/login/page.tsx` must match the Supabase setting in both dev and prod). Removed `/app/auth/callback`. Login lives in `app/login/page.tsx`. Login is invite-only (`shouldCreateUser: false`, and sign-ups disabled in the prod Supabase dashboard); add users via Supabase → Authentication → Users.
 - **UI Redesign**: Migrated from warm brown earth-tone palette to soft sage/forest green aesthetic. Uses botanical SVG decorations, bottom navigation, and Lucide React icons (replacing emoji labels).
 - **Environment separation**: Dev and prod use separate Supabase projects. Vercel environment variables are scoped per environment.
 
@@ -27,14 +27,19 @@ The app is in active beta with a real user. Core features are working:
 - Next.js 14 (App Router)
 - Tailwind CSS + custom CSS variables for theming
 - Supabase (Postgres + Auth) for database and authentication
-- Anthropic API (`claude-sonnet` via `/api/analyze`) for pattern analysis
+- OpenAI API (`gpt-4o` via `/api/analyze`) for pattern analysis
+- Fonts self-hosted via `@fontsource` + `next/font/local` (`next/font/google` breaks Vercel builds)
+- Vitest + Testing Library for tests
 - Lucide React for icons
 - Deployed on Vercel / GitHub
 
 **Key Routes:**
 - `app/login/page.tsx` — Email OTP login
 - `app/page.tsx` — Main app shell (Log, History, Analysis tabs)
-- `app/api/analyze/route.ts` — Server-side Anthropic API call
+- `app/api/analyze/route.ts` — Server-side OpenAI call (client created per request so builds don't need the key)
+- `app/api/entries/route.ts` — Entries CRUD; POST validates input with `lib/validate.ts`
+- `lib/format.ts` — Shared date formatting and `formatEntriesForAI()` (used by the analyze route and the copy-logs button)
+- Entry `date` is the user's **local** calendar day (`YYYY-MM-DD`). Create it with `toLocalDateString()` and display it with `fmtDate()`/`parseLocalDate()` — never `new Date('YYYY-MM-DD')` or `toISOString()`, which use UTC and shift the day.
 
 ---
 
@@ -52,13 +57,13 @@ The app is in active beta with a real user. Core features are working:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
-ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
 Dev and prod use **separate** Supabase projects. Local `.env.local` points to the dev project.
 
 ---
 
 ## Known Issues / Backlog
-- Mobile UX improvements tracked in `BACKLOG.md`:
+- Mobile UX improvements (not yet tracked elsewhere):
   - Symptom chip tap targets too small
   - Save button obscured by keyboard
   - Severity slider → segmented buttons
@@ -69,9 +74,11 @@ Dev and prod use **separate** Supabase projects. Local `.env.local` points to th
 ---
 
 ## Testing Approach
-- Local: check `.env.local` → `npm install` if needed → `npm run dev` → verify in browser (console + Network tab) → check Supabase Table Editor → `npm run build`
+- Automated: `npm test` (Vitest) — unit tests for `lib/` plus regression tests for bugs that reached production. When fixing a bug, add a test that fails without the fix. CI (`.github/workflows/ci.yml`) runs lint, tests and build on every push and PR.
+- Local: check `.env.local` → `npm install` if needed → `npm run dev` → verify in browser (console + Network tab) → check Supabase Table Editor → `npm test` → `npm run build`
+- Don't run `npm run build` in the project folder while `npm run dev` is running — both write to `.next` and the dev server breaks. Stop the dev server first, or use `npx tsc --noEmit` for type checks.
 - Multi-user testing: use two separate browsers with two different accounts to avoid session cookie collisions
-- The `/api/analyze` route consumes Anthropic API credits from console.anthropic.com (separate from Claude.ai Pro subscription) — keep a spend limit set on the console
+- The `/api/analyze` route consumes OpenAI API credits (platform.openai.com) — keep a monthly budget limit set there
 
 ---
 

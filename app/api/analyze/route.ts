@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { Entry } from '@/lib/types'
-
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-}
+import { formatEntriesForAI } from '@/lib/format'
 
 export async function POST(request: Request) {
   const { entries }: { entries: Entry[] } = await request.json()
@@ -13,12 +10,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No entries provided' }, { status: 400 })
   }
 
-  const summary = entries
-    .map(
-      (e) =>
-        `Date: ${fmtDate(e.date)}\nFoods: ${e.foods.join(', ') || 'none'}\nStress: ${e.stress}/5 | Sleep: ${e.sleep}/5\nSkincare: ${e.skincare.join(', ') || 'none'}\nExposures: ${e.exposures.join(', ') || 'none'}\nExercise: ${e.exercise || 'none'}\nMedications: ${e.meds.join(', ') || 'none'}\nSkin: ${e.symptoms.length ? e.symptoms.join(', ') + ' (severity ' + e.severity + '/5)' : 'none'}\nNotes: ${e.notes || '—'}`
-    )
-    .join('\n---\n')
+  const summary = formatEntriesForAI(entries)
 
   try {
     // Created per request so builds don't require OPENAI_API_KEY (e.g. Vercel preview)

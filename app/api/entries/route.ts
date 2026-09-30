@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 //import { createAdminClient } from '@/lib/supabase'
 import { createUserClient } from '@/lib/supabase-server'
+import { validateEntry } from '@/lib/validate'
 
 export async function GET() {
   const supabase = await createUserClient()
@@ -22,7 +23,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json()
   const supabase = await createUserClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,9 +31,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const body = await request.json().catch(() => null)
+  const result = validateEntry(body)
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 400 })
+  }
+
   const { data, error } = await supabase
     .from('entries')
-    .insert({ ...body, user_id: user.id })
+    .insert({ ...result.entry, user_id: user.id })
     .select()
     .single()
 

@@ -2,10 +2,7 @@
 
 import { useState } from 'react'
 import { Entry } from '@/lib/types'
-
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-}
+import { formatEntriesForAI } from '@/lib/format'
 
 interface AnalysisPanelProps {
   entries: Entry[]
@@ -16,22 +13,28 @@ export default function AnalysisPanel({ entries, onCleared }: AnalysisPanelProps
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult] = useState('')
   const [copySuccess, setCopySuccess] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState('')
 
   const n = entries.length
 
   async function analyze() {
     setAnalyzing(true)
     setResult('')
+    setAnalyzeError('')
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries }),
       })
-      const data = await res.json()
-      setResult(data.text || 'Unable to generate analysis.')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setAnalyzeError(data.error || `Analysis failed (${res.status}). Please try again.`)
+      } else {
+        setResult(data.text || 'Unable to generate analysis.')
+      }
     } catch {
-      setResult('Something went wrong. Please try again.')
+      setAnalyzeError('Something went wrong. Please check your connection and try again.')
     }
     setAnalyzing(false)
   }
@@ -41,12 +44,7 @@ export default function AnalysisPanel({ entries, onCleared }: AnalysisPanelProps
       'SKIN JOURNAL LOGS\n' +
       '='.repeat(40) +
       '\n\n' +
-      entries
-        .map(
-          (e) =>
-            `Date: ${fmtDate(e.date)}\nFoods: ${e.foods.join(', ') || 'none'}\nStress: ${e.stress}/5 | Sleep: ${e.sleep}/5\nSkincare: ${e.skincare.join(', ') || 'none'}\nExposures: ${e.exposures.join(', ') || 'none'}\nExercise: ${e.exercise || 'none'}\nMedications: ${e.meds.join(', ') || 'none'}\nSkin symptoms: ${e.symptoms.length ? e.symptoms.join(', ') + ' (severity ' + e.severity + '/5)' : 'none'}\nNotes: ${e.notes || '—'}`
-        )
-        .join('\n\n---\n\n') +
+      formatEntriesForAI(entries) +
       '\n\n' +
       '='.repeat(40) +
       '\n\nPlease analyze these skin health logs and:\n1. Identify key patterns\n2. Highlight the most likely triggers (consider 24-72hr lag effects)\n3. Suggest one specific thing to try or eliminate'
@@ -64,7 +62,17 @@ export default function AnalysisPanel({ entries, onCleared }: AnalysisPanelProps
 
   async function clearData() {
     if (confirm('Delete all entries? This cannot be undone.')) {
-      await fetch('/api/entries', { method: 'DELETE' })
+      try {
+        const res = await fetch('/api/entries', { method: 'DELETE' })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          alert(`Could not delete entries: ${data.error || `error ${res.status}`}. Nothing was removed.`)
+          return
+        }
+      } catch {
+        alert('Could not delete entries — check your connection. Nothing was removed.')
+        return
+      }
       setResult('')
       onCleared()
     }
@@ -94,7 +102,7 @@ export default function AnalysisPanel({ entries, onCleared }: AnalysisPanelProps
               claude.ai
             </a>
           </strong>{' '}
-          and ask: <em>"Analyze these skin logs and find trigger patterns."</em>
+          and ask: <em>&ldquo;Analyze these skin logs and find trigger patterns.&rdquo;</em>
         </p>
         <button className="copybtn" onClick={copyLogs} disabled={!n}>
           📋 Copy All Logs to Clipboard
@@ -118,6 +126,8 @@ export default function AnalysisPanel({ entries, onCleared }: AnalysisPanelProps
           'Analyze My Patterns →'
         )}
       </button>
+
+      {analyzeError && <p style={{ fontSize: '13px', color: 'red', marginTop: '8px' }}>{analyzeError}</p>}
 
       {result && (
         <div className="result">

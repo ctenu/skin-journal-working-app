@@ -1,4 +1,5 @@
 import { Entry } from '@/lib/types'
+import { fmtDate } from '@/lib/format'
 
 function TagList({ arr }: { arr: string[] }) {
   if (!arr?.length) return <p>—</p>
@@ -11,10 +12,6 @@ function TagList({ arr }: { arr: string[] }) {
       ))}
     </div>
   )
-}
-
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 }
 
 export default function HistoryPanel({ entries }: { entries: Entry[] }) {
@@ -85,6 +82,7 @@ export default function HistoryPanel({ entries }: { entries: Entry[] }) {
               )}
             </div>
             {e.photo && (
+              // eslint-disable-next-line @next/next/no-img-element -- photo is a base64 data URL; next/image can't optimize it
               <img
                 src={e.photo}
                 alt="skin"

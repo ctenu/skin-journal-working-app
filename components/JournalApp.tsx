@@ -13,13 +13,21 @@ export default function JournalApp() {
   const [tab, setTab] = useState<Tab>('log')
   const [entries, setEntries] = useState<Entry[]>([])
   const [showInstallBanner, setShowInstallBanner] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
   const fetchEntries = useCallback(async () => {
     try {
       const res = await fetch('/api/entries')
-      const data = await res.json()
-      setEntries(data)
-    } catch {}
+      const data = await res.json().catch(() => null)
+      if (res.ok && Array.isArray(data)) {
+        setEntries(data)
+        setLoadError('')
+      } else {
+        setLoadError(`Couldn't load your entries${data?.error ? `: ${data.error}` : ''}. Try refreshing the page.`)
+      }
+    } catch {
+      setLoadError("Couldn't load your entries — check your connection and refresh.")
+    }
   }, [])
 
   useEffect(() => {
@@ -85,6 +93,7 @@ export default function JournalApp() {
       </div>
 
       <div className="content">
+        {loadError && <p style={{ fontSize: '13px', color: 'red', marginBottom: '12px' }}>{loadError}</p>}
         {tab === 'log' && <LogPanel onSaved={fetchEntries} />}
         {tab === 'history' && <HistoryPanel entries={entries} />}
         {tab === 'analysis' && <AnalysisPanel entries={entries} onCleared={() => { setEntries([]); fetchEntries() }} />}

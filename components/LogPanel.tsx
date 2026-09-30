@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Salad, Brain, Moon, Sparkles, Leaf, Dumbbell, Pill, ScanFace } from 'lucide-react'
 import TagInput from './TagInput'
 import SliderField from './SliderField'
+import { toLocalDateString } from '@/lib/format'
 
 const SYMPTOMS = ['Redness', 'Itching', 'Swelling', 'Hives', 'Dry patches', 'Burning', 'Peeling', 'Rash']
 
@@ -43,7 +44,8 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
   async function handleSave() {
     setSaving(true)
     const entry = {
-      date: today.toISOString().split('T')[0],
+      // The user's local calendar day, taken at save time (not UTC)
+      date: toLocalDateString(),
       foods,
       stress,
       sleep,
@@ -56,11 +58,18 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
       notes,
       photo,
     }
-    const res = await fetch('/api/entries', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry),
-    })
+    let res: Response
+    try {
+      res = await fetch('/api/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry),
+      })
+    } catch {
+      setSaving(false)
+      setSaveError("Couldn't save — check your connection and try again. Your entry is still here.")
+      return
+    }
     setSaving(false)
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
@@ -180,6 +189,7 @@ export default function LogPanel({ onSaved }: LogPanelProps) {
           </label>
         ) : (
           <div className="photopreview">
+            {/* eslint-disable-next-line @next/next/no-img-element -- photo is a base64 data URL; next/image can't optimize it */}
             <img
               src={photo}
               alt="skin"
